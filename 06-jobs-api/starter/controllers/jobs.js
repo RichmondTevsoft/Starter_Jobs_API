@@ -33,7 +33,24 @@ const {BadRequestError, UnauthenticatedError, NotFoundError} = require('../error
  }
 
  const updateJob = async (req, res) => {
-    res.send('update jobs')
+   //Destructure request object
+   const {
+      body: {company, position, status},
+      user: { userId },  //get userID
+      params: { id:jobId } //get Job ID
+   } = req;
+
+   if (company === '' || position === '' || status === ''){
+      throw new BadRequestError('Company or position or status cannot be empty')
+   }
+
+   const job = await Job.findByIdAndUpdate({_id:jobId, createdBy:userId}, req.body, {new:true, runValidators:true})
+
+   if (!job) {
+      throw new NotFoundError(`No job found with ID ${jobId}`)
+   }
+
+   res.status(StatusCodes.OK).json({ job })
  }
 
  const deleteJob = async (req, res) => {
